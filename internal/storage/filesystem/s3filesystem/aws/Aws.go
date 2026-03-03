@@ -95,7 +95,9 @@ func createSession() *session.Session {
 // Upload uploads a file to AWS
 func Upload(input io.Reader, file models.File) (string, error) {
 	sess := createSession()
-	uploader := s3manager.NewUploader(sess)
+	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
+		u.PartSize = 10485248 // 10 MiB - 512; must be ≤ ddrive's StreamChunker chunk size
+	})
 
 	result, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(file.AwsBucket),
